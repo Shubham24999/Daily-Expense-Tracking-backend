@@ -2,8 +2,6 @@ package com.backend.tracker.entity;
 
 import java.time.LocalDate;
 
-import com.backend.tracker.Keys.DailyExpenseCompositeKey;
-
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,10 +39,5 @@ public class Budget {
     @Column(name = "budget_amount")
     private Double budgetAmount;
 
-    // @Column(name = "spent_amount")
-    // private Double spentAmount;
-
-    // @Column(name = "spent_details")
-    // private String spentDetails;
 
 }
