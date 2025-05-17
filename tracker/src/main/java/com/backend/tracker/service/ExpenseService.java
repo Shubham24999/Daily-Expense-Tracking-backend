@@ -27,61 +27,62 @@ public class ExpenseService {
     @Autowired
     private ExpenseDetailsRepository expenseDetailsRepository;
 
+    public Map<String, Object> getUserExpenseSummary(Long userId) {
+        Long todayEpochDay = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+
+        Map<String, Object> summary = new HashMap<>();
+
+        Optional<Budget> budget = budgetRepository.findByUserIdAndDayStartTime(userId, todayEpochDay);
+
+        double budgetAmount;
+        if (budget.isPresent()) {
+            budgetAmount = budget.get().getBudgetAmount();
+        } else {
+            Optional<Budget> userOldBudget = budgetRepository.findTopByUserIdOrderByDayStartTimeDesc(userId);
+            budgetAmount = userOldBudget.map(Budget::getBudgetAmount).orElse(1000.0); // fallback to 1000
+        }
+
+        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
+                todayEpochDay);
+        double totalSpent = expenseDetailsList.stream().mapToDouble(ExpenseDetails::getSpentAmount).sum();
+        double remaining = budgetAmount > totalSpent ? (budgetAmount - totalSpent) : (totalSpent - budgetAmount);
+        boolean exceeded = totalSpent > budgetAmount;
+
+        summary.put("userId", userId);
+        summary.put("dayStartTime", todayEpochDay);
+        summary.put("totalSpent", totalSpent);
+        summary.put("budget", budgetAmount);
+        summary.put("remaining", remaining);
+        summary.put("exceeded", exceeded);
+
+        return summary;
+    }
+
     public Map<String, Object> getDailySummary(Long userId, Long todayEpochDay) {
         Map<String, Object> summary = new HashMap<>();
 
-        // Fetching the user's expense record for today
         Optional<Budget> budget = budgetRepository.findByUserIdAndDayStartTime(userId, todayEpochDay);
 
+        double budgetAmount;
         if (budget.isPresent()) {
-            List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
-                    todayEpochDay);
-            double totalSpent = 0;
-            double budgetAmount = budget.get().getBudgetAmount();
-            double remaining = budgetAmount > totalSpent ? (budgetAmount - totalSpent)
-                    : (totalSpent - budgetAmount);
-            boolean exceeded = totalSpent > budgetAmount;
-
-            summary.put("totalSpent", totalSpent);
-            summary.put("budget", budget);
-            summary.put("remaining", remaining);
-            summary.put("exceeded", exceeded);
+            budgetAmount = budget.get().getBudgetAmount();
         } else {
-
             Optional<Budget> userOldBudget = budgetRepository.findTopByUserIdOrderByDayStartTimeDesc(userId);
-
-            if (userOldBudget.isPresent()) {
-                List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
-                        todayEpochDay);
-                double totalSpent = 0;
-                double budgetAmount = userOldBudget.get().getBudgetAmount();
-                double remaining = budgetAmount > totalSpent ? (budgetAmount - totalSpent)
-                        : (totalSpent - budgetAmount);
-                boolean exceeded = totalSpent > budgetAmount;
-
-                summary.put("totalSpent", totalSpent);
-                summary.put("budget", userOldBudget);
-                summary.put("remaining", remaining);
-                summary.put("exceeded", exceeded);
-
-            } else {
-
-                List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
-                        todayEpochDay);
-                double totalSpent = 0;
-                double budgetAmount = 1000L;
-                double remaining = budgetAmount > totalSpent ? (budgetAmount - totalSpent)
-                        : (totalSpent - budgetAmount);
-                boolean exceeded = totalSpent > budgetAmount;
-
-                summary.put("totalSpent", 0.0);
-                summary.put("budget", null);
-                summary.put("remaining", 0.0);
-                summary.put("exceeded", false);
-
-            }
-
+            budgetAmount = userOldBudget.map(Budget::getBudgetAmount).orElse(1000.0); // fallback to 1000
         }
+
+        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
+                todayEpochDay);
+        double totalSpent = expenseDetailsList.stream().mapToDouble(ExpenseDetails::getSpentAmount).sum();
+        double remaining = budgetAmount > totalSpent ? (budgetAmount - totalSpent) : (totalSpent - budgetAmount);
+        boolean exceeded = totalSpent > budgetAmount;
+
+        summary.put("userId", userId);
+        summary.put("dayStartTime", todayEpochDay);
+        summary.put("totalSpent", totalSpent);
+        summary.put("budget", budgetAmount);
+        summary.put("remaining", remaining);
+        summary.put("exceeded", exceeded);
 
         return summary;
     }
@@ -95,8 +96,6 @@ public class ExpenseService {
         Budget expenseDeatils;
         if (existingExpense.isPresent()) {
             // Update existing Expense
-            // existingExpense.setSpentAmount(requestData.getSpentAmount());
-            // existingExpense.setSpentDetails(requestData.getSpentDetails());
             existingExpense.get().setBudgetAmount(requestData.getBudgetAmount());
             expenseDeatils = budgetRepository.save(existingExpense.get());
         } else {
@@ -119,12 +118,12 @@ public class ExpenseService {
 
     public RequestResponse addExpenseDetails(BudgetAndExpenseDataModel expenseDetails) {
         // will get userdetails from Authentication or Principal
-        Long userId=expenseDetails.getUserId();
+        Long userId = expenseDetails.getUserId();
         Long todayEpochSecond = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
         RequestResponse response = new RequestResponse();
         if (expenseDetails.getSpentAmount() == null || expenseDetails.getSpentDetails() == null) {
-            response.setStatus("sucess");
+            response.setStatus("Not Sucess");
             response.setMessage("Please provide all the required spent details");
             response.setData(null);
             return response;
