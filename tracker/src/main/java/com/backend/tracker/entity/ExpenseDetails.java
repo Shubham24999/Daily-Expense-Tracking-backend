@@ -25,9 +25,8 @@ public class ExpenseDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // @ManyToOne
-    // @JoinColumn(name = "expense_id", nullable = false)
+    
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "spent_amount")
