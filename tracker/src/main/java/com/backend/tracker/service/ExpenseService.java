@@ -15,11 +15,15 @@ import com.backend.tracker.model.BudgetAndExpenseDataModel;
 import com.backend.tracker.repository.ExpenseDetailsRepository;
 import com.backend.tracker.repository.BudgetRepository;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ExpenseService {
+
+    private static final Logger logger = LogManager.getLogger(ExpenseService.class);
 
     @Autowired
     private BudgetRepository budgetRepository;
@@ -34,7 +38,7 @@ public class ExpenseService {
 
         Optional<Budget> budget = budgetRepository.findByUserIdAndDayStartTime(userId, todayEpochDay);
 
-        double budgetAmount;
+        Double budgetAmount;
         if (budget.isPresent()) {
             budgetAmount = budget.get().getBudgetAmount();
         } else {
@@ -63,7 +67,7 @@ public class ExpenseService {
 
         Optional<Budget> budget = budgetRepository.findByUserIdAndDayStartTime(userId, todayEpochDay);
 
-        double budgetAmount;
+        Double budgetAmount;
         if (budget.isPresent()) {
             budgetAmount = budget.get().getBudgetAmount();
         } else {
@@ -141,6 +145,68 @@ public class ExpenseService {
         response.setMessage("Expense details saved successfully");
         return response;
 
+    }
+
+    public RequestResponse getExpenseDetails(Long userId) {
+        RequestResponse response = new RequestResponse();
+        Long dayStartTime = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+        // will get userdetails from Authentication or Principal
+        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
+                dayStartTime);
+        if (expenseDetailsList.isEmpty()) {
+            response.setStatus("sucess");
+            response.setMessage("No Expense details found for the given user and date");
+            response.setData(null);
+        } else {
+            response.setStatus("success");
+            response.setMessage("Expense details fetched successfully");
+            response.setData(expenseDetailsList);
+        }
+        return response;
+    }
+
+    public RequestResponse updateBudget(BudgetAndExpenseDataModel requestData) {
+
+        RequestResponse response = new RequestResponse();
+        // handle empty budget amount
+        if (requestData.getBudgetAmount() == null || requestData.getBudgetAmount() <= 0) {
+            response.setStatus("error");
+            response.setMessage("Invalid budget amount provided");
+            response.setData(null);
+            return response;
+        }
+
+        Long todayEpochSecond = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+        try {
+            Optional<Budget> existingBudget = budgetRepository.findByUserIdAndDayStartTime(requestData.getUserId(),
+                    todayEpochSecond);
+
+            if (existingBudget.isPresent()) {
+                // Update existing Budget
+                existingBudget.get().setBudgetAmount(requestData.getBudgetAmount());
+                budgetRepository.save(existingBudget.get());
+                response.setStatus("success");
+                response.setMessage("Budget updated successfully");
+                response.setData(existingBudget.get());
+            } else {
+                // Create new Budget
+                Budget newBudget = new Budget();
+                newBudget.setUserId(requestData.getUserId());
+                newBudget.setDayStartTime(todayEpochSecond);
+                newBudget.setBudgetAmount(requestData.getBudgetAmount());
+                budgetRepository.save(newBudget);
+                response.setStatus("success");
+                response.setMessage("New budget created successfully");
+                response.setData(newBudget);
+            }
+        } catch (Exception e) {
+            response.setStatus("error");
+            response.setMessage("Failed to update or create budget: " + e.getMessage());
+            response.setData(null);
+            logger.info("Error updating or creating budget: {} {}", e.getMessage(), e);
+        }
+
+        return response;
     }
 
 }
