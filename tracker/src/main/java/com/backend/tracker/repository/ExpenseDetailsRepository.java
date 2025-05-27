@@ -12,4 +12,7 @@ public interface ExpenseDetailsRepository extends JpaRepository<ExpenseDetails, 
 
     List<ExpenseDetails> findByUserIdAndDayStartTime(Long userId, Long dayStartTime);
 
+    List<ExpenseDetails> findByUserIdAndDayStartTimeOrderByExpenseCreatedTimeEpochDesc(Long userId, Long dayStartTime);
+
+
 }

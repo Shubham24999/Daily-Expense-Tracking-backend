@@ -3,6 +3,7 @@ package com.backend.tracker.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,18 +150,30 @@ public class ExpenseService {
 
     public RequestResponse getExpenseDetails(Long userId) {
         RequestResponse response = new RequestResponse();
+        List<ExpenseDetails> expenseDataList = new ArrayList<>();
         Long dayStartTime = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
-        // will get userdetails from Authentication or Principal
-        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
-                dayStartTime);
+
+        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository
+                .findByUserIdAndDayStartTimeOrderByExpenseCreatedTimeEpochDesc(userId, dayStartTime);
+
+        for (ExpenseDetails expenseDetails : expenseDetailsList) {
+            ExpenseDetails expenseData = new ExpenseDetails();
+            expenseData.setId(expenseDetails.getId());
+            expenseData.setSpentAmount(expenseDetails.getSpentAmount());
+            expenseData.setSpentDetails(expenseDetails.getSpentDetails());
+            expenseData.setExpenseCreatedTimeEpoch(expenseDetails.getExpenseCreatedTimeEpoch());
+            expenseData.setDayStartTime(expenseDetails.getDayStartTime());
+            expenseDataList.add(expenseData);
+        }
+
         if (expenseDetailsList.isEmpty()) {
-            response.setStatus("sucess");
+            response.setStatus("success");
             response.setMessage("No Expense details found for the given user and date");
             response.setData(null);
         } else {
             response.setStatus("success");
             response.setMessage("Expense details fetched successfully");
-            response.setData(expenseDetailsList);
+            response.setData(expenseDataList);
         }
         return response;
     }
