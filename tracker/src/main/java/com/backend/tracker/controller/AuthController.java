@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.tracker.helper.SignUpLogInResponse;
 import com.backend.tracker.helper.RequestResponse;
 import com.backend.tracker.model.LoginRequestModel;
 import com.backend.tracker.model.UserSignUpModel;
@@ -23,15 +24,15 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<RequestResponse> registerUser(@RequestBody UserSignUpModel model) {
-        RequestResponse response = userService.registerUser(model);
+    public ResponseEntity<SignUpLogInResponse> registerUser(@RequestBody UserSignUpModel model) {
+        SignUpLogInResponse response = userService.registerUser(model);
         return new ResponseEntity<>(response,  
                 response.getStatus().equals("Ok") ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<RequestResponse> loginUser(@RequestBody LoginRequestModel model) {
-        RequestResponse response = userService.loginUser(model);
+    public ResponseEntity<SignUpLogInResponse> loginUser(@RequestBody LoginRequestModel model) {
+        SignUpLogInResponse response = userService.loginUser(model);
         return new ResponseEntity<>(response,
                 response.getStatus().equals("Ok") ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
     }

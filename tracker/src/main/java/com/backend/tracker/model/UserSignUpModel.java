@@ -10,6 +10,6 @@ public class UserSignUpModel {
     private String name;
     private String email;
     private String password;
-    private String phoneNumber;
+    private Long phoneNumber;
   
 }
