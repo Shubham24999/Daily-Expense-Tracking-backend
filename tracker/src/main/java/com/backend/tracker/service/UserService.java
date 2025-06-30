@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,14 +14,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.security.core.Authentication;
 import com.backend.tracker.entity.Users;
-import com.backend.tracker.helper.SignUpLogInResponse;
 import com.backend.tracker.helper.RequestResponse;
+import com.backend.tracker.helper.SignUpLogInResponse;
 import com.backend.tracker.model.LoginRequestModel;
 import com.backend.tracker.model.UserSignUpModel;
 import com.backend.tracker.repository.UsersRepository;
 
 @Service
 public class UserService {
+
+    private static final Logger logger = LogManager.getLogger(UserService.class);
 
     @Autowired
     private UsersRepository userRepository;
@@ -32,14 +36,16 @@ public class UserService {
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
-    public SignUpLogInResponse registerUser(UserSignUpModel model) {
+    public RequestResponse registerUser(UserSignUpModel model) {
 
-        SignUpLogInResponse response = new SignUpLogInResponse();
+        RequestResponse response = new RequestResponse();
+
+        SignUpLogInResponse signUpResponse = new SignUpLogInResponse();
 
         if (StringUtils.hasText(model.getEmail()) && StringUtils.hasText(model.getPassword())) {
 
             if (userRepository.existsByEmail(model.getEmail())) {
-                response.setStatus("fail");
+                response.setStatus("Ok");
                 response.setMessage("Email already exists!");
                 return response;
             }
@@ -59,30 +65,37 @@ public class UserService {
                 Users savedUser = userRepository.save(user);
 
                 String token = jwtUtilsService.generateToken(model.getEmail());
-                response.setToken(token);
+                signUpResponse.setToken(token);
+                signUpResponse.setEmail(savedUser.getEmail());
+                signUpResponse.setId(savedUser.getId().intValue());
+
 
                 response.setStatus("Ok");
                 response.setMessage("User registered successfully!");
                 response.setData(savedUser);
-
-                return response;
+                logger.info("User registered successfully: {}", savedUser.getEmail());
 
             } else {
+                logger.info("Invalid email format: {}", model.getEmail());
                 response.setStatus("fail");
                 response.setMessage("Please Provide Email and Reuired Data in Correct Format!");
-                return response;
+
             }
         } else {
             response.setStatus("fail");
             response.setMessage("Please Provide Email and password Data!");
-            return response;
+
         }
+
+        return response;
 
     }
 
-    public SignUpLogInResponse loginUser(LoginRequestModel model) {
+    public RequestResponse loginUser(LoginRequestModel model) {
 
-        SignUpLogInResponse response = new SignUpLogInResponse();
+        RequestResponse response = new RequestResponse();
+
+        SignUpLogInResponse loginResponse = new SignUpLogInResponse();
 
         String[] requiredData = model.getEmail().split("@");
 
@@ -106,9 +119,15 @@ public class UserService {
             if (authentication.isAuthenticated()) {
 
                 String token = jwtUtilsService.generateToken(model.getEmail());
-                response.setToken(token);
+                
+
+                loginResponse.setToken(token);
+                loginResponse.setEmail(user.getEmail());
+                loginResponse.setId(user.getId().intValue());
+
                 response.setStatus("OK");
                 response.setMessage("User logged in successfully");
+                response.setData(loginResponse);
             } else {
                 response.setStatus("Not OK");
                 response.setMessage("Invalid credentials");

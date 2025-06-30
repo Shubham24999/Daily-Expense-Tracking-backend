@@ -36,12 +36,6 @@ public class jwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // ✅ SKIP jwtFilter for /auth/* endpoints
-        if (path.startsWith("/auth")) {
-            filterChain.doFilter(request, response); // continue without JWT checking
-            return;
-        }
-
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String userName = null;
@@ -61,10 +55,9 @@ public class jwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
             }
-
-            filterChain.doFilter(request, response);
-
         }
+        
+        filterChain.doFilter(request, response);
     }
 
 }

@@ -44,12 +44,34 @@ public class ExpenseService {
             budgetAmount = budget.get().getBudgetAmount();
         } else {
             Optional<Budget> userOldBudget = budgetRepository.findTopByUserIdOrderByDayStartTimeDesc(userId);
-            budgetAmount = userOldBudget.map(Budget::getBudgetAmount).orElse(1000.0); // fallback to 1000
+            // budgetAmount = userOldBudget.map(Budget::getBudgetAmount).orElse(1000.0); //
+            // fallback to 1000
+            if (userOldBudget.isPresent()) {
+                budgetAmount = userOldBudget.get().getBudgetAmount();
+            } else {
+                budgetAmount = 1000.0; // or any other default value you prefer
+                logger.info("No budget found for userId: {}. Using default budget amount: {}", userId, budgetAmount);
+            }
         }
 
         List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
                 todayEpochDay);
-        double totalSpent = expenseDetailsList.stream().mapToDouble(ExpenseDetails::getSpentAmount).sum();
+        if (expenseDetailsList.isEmpty()) {
+            logger.info("No expense details found for userId: {} on day: {}", userId, todayEpochDay);
+            return Map.of(
+                    "userId", userId,
+                    "dayStartTime", todayEpochDay,
+                    "totalSpent", 0.0,
+                    "budget", budgetAmount,
+                    "remaining", budgetAmount,
+                    "exceeded", false);
+        }
+
+        double totalSpent = expenseDetailsList.stream()
+                .mapToDouble(ExpenseDetails::getSpentAmount)
+                .sum();
+        // =
+        // expenseDetailsList.stream().mapToDouble(ExpenseDetails::getSpentAmount).sum();
         double remaining = budgetAmount > totalSpent ? (budgetAmount - totalSpent) : (totalSpent - budgetAmount);
         boolean exceeded = totalSpent > budgetAmount;
 

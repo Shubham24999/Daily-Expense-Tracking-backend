@@ -1,6 +1,5 @@
 package com.backend.tracker.service;
 
-
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -26,7 +25,6 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    private static final Logger logger = LogManager.getLogger(JwtService.class);
 
     // 1. Method is jus use secret Key application.properties file that would be
     // saved into .gitIgnore later.
@@ -37,14 +35,14 @@ public class JwtService {
     // private String secretKey = "";
 
     // public JwtService() {
-    //     try {
-    //         KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
-    //         SecretKey sK = keyGen.generateKey();
-    //         secretKey = Base64.getEncoder().encodeToString(sK.getEncoded());
-    //     } catch (NoSuchAlgorithmException e) {
-    //         logger.error("Error generating key: " + e.getMessage());
-    //         throw new RuntimeException("Error generating key", e);
-    //     }
+    // try {
+    // KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+    // SecretKey sK = keyGen.generateKey();
+    // secretKey = Base64.getEncoder().encodeToString(sK.getEncoded());
+    // } catch (NoSuchAlgorithmException e) {
+    // logger.error("Error generating key: " + e.getMessage());
+    // throw new RuntimeException("Error generating key", e);
+    // }
     // }
 
     public String generateToken(String username) {

@@ -12,7 +12,7 @@ public class TrackerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TrackerApplication.class, args);
-		logger.info("==========================>Tracker Application started successfully   <==========================");
+		logger.info("==========================>   Tracker Application started successfully   <==========================");
 	}
 
 }

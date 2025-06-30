@@ -6,11 +6,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SignUpLogInResponse {
-    private String status;
-    private String message;
+
+    private String email;
+    
     private String token;
 
-    private Object data;
+    private Integer id;;
     
 
 }
