@@ -11,7 +11,11 @@ public class SignUpLogInResponse {
     
     private String token;
 
-    private Integer id;;
+    private Integer id;
+
+    private String name;
+
+    private Integer phoneNumber;
     
 
 }

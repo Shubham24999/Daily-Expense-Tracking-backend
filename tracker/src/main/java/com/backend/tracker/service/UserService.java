@@ -68,11 +68,11 @@ public class UserService {
                 signUpResponse.setToken(token);
                 signUpResponse.setEmail(savedUser.getEmail());
                 signUpResponse.setId(savedUser.getId().intValue());
-
+                signUpResponse.setName(StringUtils.hasText(savedUser.getName()) ? savedUser.getName() : "");
 
                 response.setStatus("Ok");
                 response.setMessage("User registered successfully!");
-                response.setData(savedUser);
+                response.setData(signUpResponse);
                 logger.info("User registered successfully: {}", savedUser.getEmail());
 
             } else {
@@ -119,11 +119,11 @@ public class UserService {
             if (authentication.isAuthenticated()) {
 
                 String token = jwtUtilsService.generateToken(model.getEmail());
-                
 
                 loginResponse.setToken(token);
                 loginResponse.setEmail(user.getEmail());
                 loginResponse.setId(user.getId().intValue());
+                loginResponse.setName(user.getName());
 
                 response.setStatus("OK");
                 response.setMessage("User logged in successfully");

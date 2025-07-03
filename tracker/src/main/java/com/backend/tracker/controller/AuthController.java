@@ -3,6 +3,7 @@ package com.backend.tracker.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +34,7 @@ public class AuthController {
     public ResponseEntity<RequestResponse> loginUser(@RequestBody LoginRequestModel model) {
         RequestResponse response = userService.loginUser(model);
         return new ResponseEntity<>(response,
-                response.getStatus().equals("Ok") ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
+                response.getStatus().equalsIgnoreCase("Ok") ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
     }
 
 }

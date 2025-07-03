@@ -5,6 +5,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import com.backend.tracker.background.DatabaseCreation;
+
 @SpringBootApplication
 public class TrackerApplication {
 
@@ -12,7 +14,9 @@ public class TrackerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TrackerApplication.class, args);
-		logger.info("==========================>   Tracker Application started successfully   <==========================");
+
+		// DatabaseCreation.checkTrackerDatabase();
+		logger.info("<================   Tracker Application started successfully   ============>");
 	}
 
 }

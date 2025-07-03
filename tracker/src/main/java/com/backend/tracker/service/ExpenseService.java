@@ -137,7 +137,7 @@ public class ExpenseService {
         }
 
         RequestResponse response = new RequestResponse();
-        response.setStatus("success");
+        response.setStatus("OK");
         response.setMessage("Budget saved successfully");
         response.setData(expenseDeatils);
         return response;
@@ -164,7 +164,7 @@ public class ExpenseService {
         newExpenseDetails.setExpenseCreatedTimeEpoch(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
         response.setData(expenseDetailsRepository.save(newExpenseDetails));
 
-        response.setStatus("success");
+        response.setStatus("OK");
         response.setMessage("Expense details saved successfully");
         return response;
 
@@ -189,11 +189,11 @@ public class ExpenseService {
         }
 
         if (expenseDetailsList.isEmpty()) {
-            response.setStatus("success");
+            response.setStatus("OK");
             response.setMessage("No Expense details found for the given user and date");
             response.setData(null);
         } else {
-            response.setStatus("success");
+            response.setStatus("OK");
             response.setMessage("Expense details fetched successfully");
             response.setData(expenseDataList);
         }
@@ -220,7 +220,7 @@ public class ExpenseService {
                 // Update existing Budget
                 existingBudget.get().setBudgetAmount(requestData.getBudgetAmount());
                 budgetRepository.save(existingBudget.get());
-                response.setStatus("success");
+                response.setStatus("OK");
                 response.setMessage("Budget updated successfully");
                 response.setData(existingBudget.get());
             } else {
@@ -230,7 +230,7 @@ public class ExpenseService {
                 newBudget.setDayStartTime(todayEpochSecond);
                 newBudget.setBudgetAmount(requestData.getBudgetAmount());
                 budgetRepository.save(newBudget);
-                response.setStatus("success");
+                response.setStatus("OK");
                 response.setMessage("New budget created successfully");
                 response.setData(newBudget);
             }
