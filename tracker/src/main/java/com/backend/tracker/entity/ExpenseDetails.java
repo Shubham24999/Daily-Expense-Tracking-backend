@@ -14,7 +14,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "expense_details", indexes = {
-    @Index(name = "idx_user_day", columnList = "userId, dayStartTime")
+        @Index(name = "idx_user_day", columnList = "userId, dayStartTime")
 })
 @Getter
 @Setter
@@ -40,5 +40,8 @@ public class ExpenseDetails {
 
     @Column(name = "expense_created_time_epoch")
     private Long expenseCreatedTimeEpoch;
+
+    @Column(name = "expense_update_time_epoch")
+    private Long expenseUpdateTimeEpoch;
 
 }

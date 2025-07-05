@@ -6,24 +6,25 @@ import com.backend.tracker.service.ExpenseService;
 
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 // @CrossOrigin("*")
 @RestController
 @RequestMapping("/api/expense")
 public class ExpenseController {
 
+    private static final Logger logger = LogManager.getLogger(ExpenseController.class);
+
     @Autowired
     private ExpenseService expenseService;
 
     @GetMapping("/summary/{userId}")
     public ResponseEntity<Map<String, Object>> getUserExpenseSummary(@PathVariable Long userId) {
-        System.out.println("Fetching expense summary for userId: " + userId);
         Map<String, Object> response = expenseService.getUserExpenseSummary(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -37,22 +38,35 @@ public class ExpenseController {
 
     @PostMapping("/update/budget")
     public ResponseEntity<RequestResponse> updateBudgetDetails(@RequestBody BudgetAndExpenseDataModel requestData) {
-        System.out.println("Updating budget details for userId: " + requestData.getUserId());
+        logger.info("Updating budget details for userId: " + requestData.getUserId());
         RequestResponse response = expenseService.updateBudget(requestData);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("/add")
     public ResponseEntity<RequestResponse> addExpenseDetails(@RequestBody BudgetAndExpenseDataModel expenseDetails) {
-        System.out.println("Adding expense details for userId: " + expenseDetails.getUserId());
+        logger.info("Adding expense details for userId: " + expenseDetails.getUserId());
         RequestResponse response = expenseService.addExpenseDetails(expenseDetails);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/get/{userId}")
     public ResponseEntity<RequestResponse> getExpenseDetails(@PathVariable Long userId) {
-        System.out.println("Fetching expense details for userId: " + userId);
+        logger.info("Fetching expense details for userId: " + userId);
         RequestResponse response = expenseService.getExpenseDetails(userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/update/{expenseId}")
+    public ResponseEntity<RequestResponse> updateExpenseDetails(@PathVariable Long expenseId,
+            @RequestBody BudgetAndExpenseDataModel expenseData) {
+        RequestResponse response = expenseService.updateExpenseDetails(expenseId, expenseData);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/delete/{expenseId}")
+    public ResponseEntity<RequestResponse> deleteExpenseDetails(@PathVariable Long expenseId) {
+        RequestResponse response = expenseService.deleteExpenseDetails(expenseId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
