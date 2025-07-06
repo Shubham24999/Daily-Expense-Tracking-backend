@@ -77,7 +77,7 @@ public class UserService {
 
             } else {
                 logger.info("Invalid email format: {}", model.getEmail());
-                response.setStatus("fail");
+                response.setStatus("OK");
                 response.setMessage("Please Provide Email and Reuired Data in Correct Format!");
 
             }
@@ -105,36 +105,43 @@ public class UserService {
             Optional<Users> optionalUser = userRepository.findByEmail(model.getEmail());
 
             if (optionalUser.isEmpty()) {
-                response.setStatus("fail");
-                response.setMessage("User not found!");
+                response.setStatus("FAIL");
+                response.setMessage("User not found! Please sign up before logging in.");
                 return response;
             }
 
             Users user = optionalUser.get();
             // this should be-- authenticationManager where we have declare with name like
             // in Security Config
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getEmail(), model.getPassword()));
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(user.getEmail(), model.getPassword()));
 
-            if (authentication.isAuthenticated()) {
+                if (authentication.isAuthenticated()) {
 
-                String token = jwtUtilsService.generateToken(model.getEmail());
+                    String token = jwtUtilsService.generateToken(model.getEmail());
 
-                loginResponse.setToken(token);
-                loginResponse.setEmail(user.getEmail());
-                loginResponse.setId(user.getId().intValue());
-                loginResponse.setName(user.getName());
+                    loginResponse.setToken(token);
+                    loginResponse.setEmail(user.getEmail());
+                    loginResponse.setId(user.getId().intValue());
+                    loginResponse.setName(user.getName());
 
-                response.setStatus("OK");
-                response.setMessage("User logged in successfully");
-                response.setData(loginResponse);
-            } else {
-                response.setStatus("Not OK");
-                response.setMessage("Invalid credentials");
+                    response.setStatus("OK");
+                    response.setMessage("User logged in successfully");
+                    response.setData(loginResponse);
+                } else {
+                    response.setStatus("FAIL");
+                    response.setMessage("Invalid credentials provided. Please try again.");
+                }
+
+            } catch (Exception e) {
+                response.setStatus("FAIL");
+                response.setMessage("Invalid credentials provided. Please try again.");
+                logger.error("Login failed for user {}: {}", model.getEmail(), e.getMessage());
             }
 
         } else {
-            response.setStatus("fail");
+            response.setStatus("FAIL");
             response.setMessage("Please Provide Email in Correct Format!");
             return response;
         }

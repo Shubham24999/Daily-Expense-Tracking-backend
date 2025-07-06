@@ -25,7 +25,6 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-
     // 1. Method is jus use secret Key application.properties file that would be
     // saved into .gitIgnore later.
     @Value("${jwt.secret}")
@@ -54,7 +53,7 @@ public class JwtService {
                 .add(claims)
                 .subject(username)
                 .issuedAt(new java.util.Date(System.currentTimeMillis()))
-                .expiration(new java.util.Date(System.currentTimeMillis() + 60 * 60 * 30)) // 30 minutes
+                .expiration(new java.util.Date(System.currentTimeMillis() + 3600 * 60 * 5)) // 5 hrs
                 .and()
                 .signWith(getKey())
                 .compact();

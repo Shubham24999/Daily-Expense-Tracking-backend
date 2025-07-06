@@ -33,8 +33,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<RequestResponse> loginUser(@RequestBody LoginRequestModel model) {
         RequestResponse response = userService.loginUser(model);
-        return new ResponseEntity<>(response,
-                response.getStatus().equalsIgnoreCase("Ok") ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
+        return ResponseEntity.ok(response);
+        // return new ResponseEntity<>(response,
+        //         response.getStatus().equalsIgnoreCase("Ok") ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
     }
 
 }

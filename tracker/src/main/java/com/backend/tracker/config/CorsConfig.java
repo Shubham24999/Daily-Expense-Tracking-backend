@@ -14,10 +14,11 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*")
+                        .allowedOrigins("http://localhost:3000")
+                        // .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedMethods("*")
                         // if allowCredentials =true then it should use Authorization while calling api
-                        .allowCredentials(false);
+                        .allowCredentials(true);
             }
         };
     }

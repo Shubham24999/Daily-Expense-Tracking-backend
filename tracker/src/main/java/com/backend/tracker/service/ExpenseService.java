@@ -192,21 +192,27 @@ public class ExpenseService {
     public RequestResponse getExpenseDetails(Long userId) {
         RequestResponse response = new RequestResponse();
         try {
-            List<ExpenseDetails> expenseDataList = new ArrayList<>();
+            List<BudgetAndExpenseDataModel> expenseDataList = new ArrayList<>();
             Long dayStartTime = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
             List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository
                     .findByUserIdAndDayStartTimeOrderByExpenseCreatedTimeEpochDesc(userId, dayStartTime);
+            Long number = 1L;
 
             for (ExpenseDetails expenseDetails : expenseDetailsList) {
-                ExpenseDetails expenseData = new ExpenseDetails();
-                expenseData.setId(expenseDetails.getId());
+                BudgetAndExpenseDataModel expenseData = new BudgetAndExpenseDataModel();
+                expenseData.setId(number++);
+                expenseData.setExpenseId(expenseDetails.getId());
                 expenseData.setSpentAmount(expenseDetails.getSpentAmount());
                 expenseData.setSpentDetails(expenseDetails.getSpentDetails());
-                expenseData.setExpenseCreatedTimeEpoch(expenseDetails.getExpenseCreatedTimeEpoch());
-                expenseData.setDayStartTime(expenseDetails.getDayStartTime());
+                expenseData.setExpenseCreatedTime(expenseDetails.getExpenseCreatedTimeEpoch());
+
+                expenseData.setDate(expenseDetails.getDayStartTime());
+                expenseData.setUserId(expenseDetails.getUserId());
                 expenseDataList.add(expenseData);
             }
+            // expenseData.setTotalNumberOfExpenses(expenseDetailsList.size());
+            // expenseData.setNumberOfExpenses();
 
             if (expenseDetailsList.isEmpty()) {
                 response.setStatus("OK");
@@ -320,6 +326,12 @@ public class ExpenseService {
 
         RequestResponse returnValue = new RequestResponse();
 
+        if (expenseId == null || expenseId <= 0) {
+            returnValue.setStatus("error");
+            returnValue.setMessage("Invalid expense ID provided");
+            return returnValue;
+        }
+
         try {
             Optional<ExpenseDetails> expenseDetails = expenseDetailsRepository.findById(expenseId);
             if (expenseDetails.isPresent()) {
@@ -332,6 +344,7 @@ public class ExpenseService {
                 returnValue.setMessage("No Expenses find for: {}" + expenseId);
                 returnValue.setStatus("NOT_FOUND");
             }
+            logger.info("Expense deleted successfully: {}", expenseId);
 
         } catch (Exception e) {
             returnValue.setStatus("error");
