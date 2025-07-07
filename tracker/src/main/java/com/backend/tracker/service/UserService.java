@@ -45,7 +45,7 @@ public class UserService {
         if (StringUtils.hasText(model.getEmail()) && StringUtils.hasText(model.getPassword())) {
 
             if (userRepository.existsByEmail(model.getEmail())) {
-                response.setStatus("Ok");
+                response.setStatus("FAIL");
                 response.setMessage("Email already exists!");
                 return response;
             }

@@ -156,7 +156,7 @@ public class ExpenseService {
     public RequestResponse addExpenseDetails(BudgetAndExpenseDataModel expenseDetails) {
         RequestResponse response = new RequestResponse();
         try {
-            // will get userdetails from Authentication or Principal
+            // will get userDetails from Authentication or Principal
             Long userId = expenseDetails.getUserId();
             Long todayEpochSecond = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 

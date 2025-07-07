@@ -27,7 +27,7 @@ public class AuthController {
 
         RequestResponse response = userService.registerUser(model);
         return new ResponseEntity<>(response,
-                response.getStatus().equals("Ok") ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
+                response.getStatus().equals("OK") ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/login")
@@ -37,5 +37,7 @@ public class AuthController {
         // return new ResponseEntity<>(response,
         //         response.getStatus().equalsIgnoreCase("Ok") ? HttpStatus.OK : HttpStatus.UNAUTHORIZED);
     }
+
+    // create api for update password..
 
 }
