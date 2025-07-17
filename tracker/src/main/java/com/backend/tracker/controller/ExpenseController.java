@@ -1,9 +1,12 @@
 package com.backend.tracker.controller;
 
+import com.backend.tracker.entity.Users;
 import com.backend.tracker.helper.RequestResponse;
 import com.backend.tracker.model.BudgetAndExpenseDataModel;
+import com.backend.tracker.repository.UsersRepository;
 import com.backend.tracker.service.ExpenseService;
 
+import java.security.Principal;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -23,8 +26,16 @@ public class ExpenseController {
     @Autowired
     private ExpenseService expenseService;
 
-    @GetMapping("/summary/{userId}")
-    public ResponseEntity<Map<String, Object>> getUserExpenseSummary(@PathVariable Long userId) {
+    @Autowired
+    private UsersRepository userRepository;
+
+    @GetMapping("/summary")
+    public ResponseEntity<Map<String, Object>> getUserExpenseSummary(Principal principal) {
+        String email = principal.getName();
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Long userId = user.getId();
         Map<String, Object> response = expenseService.getUserExpenseSummary(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -44,15 +55,25 @@ public class ExpenseController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<RequestResponse> addExpenseDetails(@RequestBody BudgetAndExpenseDataModel expenseDetails) {
-        logger.info("Adding expense details for userId: " + expenseDetails.getUserId());
-        RequestResponse response = expenseService.addExpenseDetails(expenseDetails);
+    public ResponseEntity<RequestResponse> addExpenseDetails(Principal principal,
+            @RequestBody BudgetAndExpenseDataModel expenseDetails) {
+        String email = principal.getName();
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Long userId = user.getId();
+
+        RequestResponse response = expenseService.addExpenseDetails(userId, expenseDetails);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/get/{userId}")
-    public ResponseEntity<RequestResponse> getExpenseDetails(@PathVariable Long userId) {
-        logger.info("Fetching expense details for userId: " + userId);
+    @GetMapping("/get")
+    public ResponseEntity<RequestResponse> getExpenseDetails(Principal principal) {
+        String email = principal.getName();
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Long userId = user.getId();
         RequestResponse response = expenseService.getExpenseDetails(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

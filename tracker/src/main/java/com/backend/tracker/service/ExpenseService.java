@@ -153,11 +153,10 @@ public class ExpenseService {
         return response;
     }
 
-    public RequestResponse addExpenseDetails(BudgetAndExpenseDataModel expenseDetails) {
+    public RequestResponse addExpenseDetails(Long userId, BudgetAndExpenseDataModel expenseDetails) {
         RequestResponse response = new RequestResponse();
         try {
-            // will get userDetails from Authentication or Principal
-            Long userId = expenseDetails.getUserId();
+
             Long todayEpochSecond = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
             if (expenseDetails.getSpentAmount() == null || expenseDetails.getSpentDetails() == null) {
