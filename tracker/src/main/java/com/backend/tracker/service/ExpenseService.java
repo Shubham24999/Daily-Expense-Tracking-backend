@@ -19,8 +19,14 @@ import com.backend.tracker.repository.BudgetRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class ExpenseService {
@@ -352,6 +358,75 @@ public class ExpenseService {
         }
 
         return returnValue;
+    }
+
+    public RequestResponse getExpenseDetails(Long userId, int page, int size, String fromDate, String toDate) {
+        RequestResponse response = new RequestResponse();
+        try {
+            Long fromEpoch = null;
+            Long toEpoch = null;
+
+            if (fromDate != null && toDate != null) {
+                LocalDate from = LocalDate.parse(fromDate);
+                LocalDate to = LocalDate.parse(toDate);
+                fromEpoch = from.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+                toEpoch = to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond(); // inclusive range
+            }
+
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "expenseCreatedTimeEpoch"));
+            Page<ExpenseDetails> expensePage;
+
+            if (fromEpoch != null && toEpoch != null) {
+                expensePage = expenseDetailsRepository
+                        .findByUserIdAndExpenseCreatedTimeEpochBetween(userId, fromEpoch, toEpoch, pageable);
+            } else {
+                expensePage = expenseDetailsRepository.findByUserId(userId, pageable);
+            }
+
+            Double totalSpent = 0.0;
+            if (fromEpoch != null && toEpoch != null) {
+                totalSpent = expenseDetailsRepository
+                        .sumSpentByUserIdAndPeriod(userId, fromEpoch, toEpoch);
+            } else {
+                totalSpent = expenseDetailsRepository.sumSpentByUserId(userId);
+            }
+            if (totalSpent == null) {
+                totalSpent = 0.0;
+            }
+
+            List<BudgetAndExpenseDataModel> expenseDataList = new ArrayList<>();
+            Long number = 1L;
+            for (ExpenseDetails expenseDetails : expensePage.getContent()) {
+                BudgetAndExpenseDataModel expenseData = new BudgetAndExpenseDataModel();
+                expenseData.setId(number++);
+                expenseData.setExpenseId(expenseDetails.getId());
+                expenseData.setSpentAmount(expenseDetails.getSpentAmount());
+                expenseData.setSpentDetails(expenseDetails.getSpentDetails());
+                expenseData.setExpenseCreatedTime(expenseDetails.getExpenseCreatedTimeEpoch());
+                expenseData.setDate(expenseDetails.getDayStartTime());
+                expenseData.setUserId(expenseDetails.getUserId());
+                expenseDataList.add(expenseData);
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("expenses", expenseDataList);
+            result.put("currentPage", expensePage.getNumber());
+            result.put("totalPages", expensePage.getTotalPages());
+            result.put("totalItems", expensePage.getTotalElements());
+            result.put("totalSpent", totalSpent);
+
+            response.setStatus("OK");
+            response.setMessage(
+                    expenseDataList.isEmpty() ? "No Expense details found" : "Expense details fetched successfully");
+            response.setData(result);
+
+        } catch (Exception e) {
+            response.setStatus("error");
+            response.setMessage("Failed to get expense details: " + e.getMessage());
+            response.setData(null);
+            logger.error("Error while getting expense details: {} {}", e.getMessage(), e);
+        }
+        return response;
     }
 
 }
