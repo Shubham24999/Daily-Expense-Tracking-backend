@@ -34,6 +34,8 @@ public interface ExpenseDetailsRepository extends JpaRepository<ExpenseDetails, 
     Double sumSpentByUserIdAndPeriod(@Param("userId") Long userId,
                                      @Param("fromEpoch") Long fromEpoch,
                                      @Param("toEpoch") Long toEpoch);
+
+    List<ExpenseDetails> findByUserId(Long userId);
 }
 
 

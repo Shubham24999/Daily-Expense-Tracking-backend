@@ -25,7 +25,6 @@ import org.springframework.util.StringUtils;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 @Service
@@ -38,6 +37,10 @@ public class ExpenseService {
 
     @Autowired
     private ExpenseDetailsRepository expenseDetailsRepository;
+
+    public List<ExpenseDetails> getAllExpenses(Long userId) {
+        return expenseDetailsRepository.findByUserId(userId);
+    }
 
     public Map<String, Object> getUserExpenseSummary(Long userId) {
 
