@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,9 +15,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "expense_details", indexes = {
-        @Index(name = "idx_user_day", columnList = "userId, dayStartTime")
-})
+@Table(name = "expense_details")
+// , indexes = {
+//         @Index(name = "idx_user_day", columnList = "userId, dayStartTime")
+// })
 @Getter
 @Setter
 @AllArgsConstructor
@@ -26,8 +29,9 @@ public class ExpenseDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private Users user;
 
     @Column(name = "spent_amount")
     private Double spentAmount;

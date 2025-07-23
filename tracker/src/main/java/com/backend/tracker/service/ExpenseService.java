@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import com.backend.tracker.entity.Budget;
 import com.backend.tracker.entity.ExpenseDetails;
+import com.backend.tracker.entity.Users;
 import com.backend.tracker.helper.RequestResponse;
 import com.backend.tracker.model.BudgetAndExpenseDataModel;
 import com.backend.tracker.repository.ExpenseDetailsRepository;
@@ -38,23 +39,19 @@ public class ExpenseService {
     @Autowired
     private ExpenseDetailsRepository expenseDetailsRepository;
 
-    public List<ExpenseDetails> getAllExpenses(Long userId) {
-        return expenseDetailsRepository.findByUserId(userId);
-    }
-
     public Map<String, Object> getUserExpenseSummary(Long userId) {
 
         Long todayEpochDay = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
         Map<String, Object> summary = new HashMap<>();
 
-        Optional<Budget> budget = budgetRepository.findByUserIdAndDayStartTime(userId, todayEpochDay);
+        Optional<Budget> budget = budgetRepository.findByUser_IdAndDayStartTime(userId, todayEpochDay);
 
         Double budgetAmount;
         if (budget.isPresent()) {
             budgetAmount = budget.get().getBudgetAmount();
         } else {
-            Optional<Budget> userOldBudget = budgetRepository.findTopByUserIdOrderByDayStartTimeDesc(userId);
+            Optional<Budget> userOldBudget = budgetRepository.findTopByUser_IdOrderByDayStartTimeDesc(userId);
             // budgetAmount = userOldBudget.map(Budget::getBudgetAmount).orElse(1000.0); //
             // fallback to 1000
             if (userOldBudget.isPresent()) {
@@ -65,7 +62,7 @@ public class ExpenseService {
             }
         }
 
-        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
+        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUser_IdAndDayStartTime(userId,
                 todayEpochDay);
         if (expenseDetailsList.isEmpty()) {
             logger.info("No expense details found for userId: {} on day: {}", userId, todayEpochDay);
@@ -99,17 +96,17 @@ public class ExpenseService {
     public Map<String, Object> getDailySummary(Long userId, Long todayEpochDay) {
         Map<String, Object> summary = new HashMap<>();
 
-        Optional<Budget> budget = budgetRepository.findByUserIdAndDayStartTime(userId, todayEpochDay);
+        Optional<Budget> budget = budgetRepository.findByUser_IdAndDayStartTime(userId, todayEpochDay);
 
         Double budgetAmount;
         if (budget.isPresent()) {
             budgetAmount = budget.get().getBudgetAmount();
         } else {
-            Optional<Budget> userOldBudget = budgetRepository.findTopByUserIdOrderByDayStartTimeDesc(userId);
+            Optional<Budget> userOldBudget = budgetRepository.findTopByUser_IdOrderByDayStartTimeDesc(userId);
             budgetAmount = userOldBudget.map(Budget::getBudgetAmount).orElse(1000.0); // fallback to 1000
         }
 
-        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserIdAndDayStartTime(userId,
+        List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUser_IdAndDayStartTime(userId,
                 todayEpochDay);
         double totalSpent = expenseDetailsList.stream().mapToDouble(ExpenseDetails::getSpentAmount).sum();
         double remaining = budgetAmount > totalSpent ? (budgetAmount - totalSpent) : (totalSpent - budgetAmount);
@@ -125,14 +122,14 @@ public class ExpenseService {
         return summary;
     }
 
-    public RequestResponse createBudget(BudgetAndExpenseDataModel requestData) {
+    public RequestResponse createBudget(Users user, BudgetAndExpenseDataModel requestData) {
         RequestResponse response = new RequestResponse();
 
         try {
             // Checking if the Expense for today already exists
             Long todayEpochSecond = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
-            Optional<Budget> existingExpense = budgetRepository.findByUserIdAndDayStartTime(requestData.getUserId(),
+            Optional<Budget> existingExpense = budgetRepository.findByUser_IdAndDayStartTime(requestData.getUserId(),
                     todayEpochSecond);
             Budget expenseDetails;
             if (existingExpense.isPresent()) {
@@ -142,7 +139,7 @@ public class ExpenseService {
             } else {
                 // Create new Expense
                 Budget newExpense = new Budget();
-                newExpense.setUserId(requestData.getUserId());
+                newExpense.setUser(user);
                 newExpense.setDayStartTime(todayEpochSecond);
                 // newExpense.setSpentAmount(requestData.getSpentAmount());
                 // newExpense.setSpentDetails(requestData.getSpentDetails());
@@ -162,7 +159,7 @@ public class ExpenseService {
         return response;
     }
 
-    public RequestResponse addExpenseDetails(Long userId, BudgetAndExpenseDataModel expenseDetails) {
+    public RequestResponse addExpenseDetails(Users user, BudgetAndExpenseDataModel expenseDetails) {
         RequestResponse response = new RequestResponse();
         try {
 
@@ -176,7 +173,7 @@ public class ExpenseService {
             }
             ExpenseDetails newExpenseDetails = new ExpenseDetails();
 
-            newExpenseDetails.setUserId(userId);
+            newExpenseDetails.setUser(user);
             newExpenseDetails.setSpentAmount(expenseDetails.getSpentAmount());
             newExpenseDetails.setSpentDetails(
                     StringUtils.hasText(expenseDetails.getSpentDetails()) ? expenseDetails.getSpentDetails()
@@ -204,7 +201,7 @@ public class ExpenseService {
             Long dayStartTime = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
             List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository
-                    .findByUserIdAndDayStartTimeOrderByExpenseCreatedTimeEpochDesc(userId, dayStartTime);
+                    .findByUser_IdAndDayStartTimeOrderByExpenseCreatedTimeEpochDesc(userId, dayStartTime);
             Long number = 1L;
 
             for (ExpenseDetails expenseDetails : expenseDetailsList) {
@@ -216,7 +213,7 @@ public class ExpenseService {
                 expenseData.setExpenseCreatedTime(expenseDetails.getExpenseCreatedTimeEpoch());
 
                 expenseData.setDate(expenseDetails.getDayStartTime());
-                expenseData.setUserId(expenseDetails.getUserId());
+                expenseData.setUserId(expenseDetails.getUser().getId());
                 expenseDataList.add(expenseData);
             }
             // expenseData.setTotalNumberOfExpenses(expenseDetailsList.size());
@@ -240,7 +237,7 @@ public class ExpenseService {
         return response;
     }
 
-    public RequestResponse updateBudget(BudgetAndExpenseDataModel requestData) {
+    public RequestResponse updateBudget(Users user, BudgetAndExpenseDataModel requestData) {
 
         RequestResponse response = new RequestResponse();
         // handle empty budget amount
@@ -253,7 +250,7 @@ public class ExpenseService {
 
         Long todayEpochSecond = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
         try {
-            Optional<Budget> existingBudget = budgetRepository.findByUserIdAndDayStartTime(requestData.getUserId(),
+            Optional<Budget> existingBudget = budgetRepository.findByUser_IdAndDayStartTime(requestData.getUserId(),
                     todayEpochSecond);
 
             if (existingBudget.isPresent()) {
@@ -266,7 +263,7 @@ public class ExpenseService {
             } else {
                 // Create new Budget
                 Budget newBudget = new Budget();
-                newBudget.setUserId(requestData.getUserId());
+                newBudget.setUser(user);
                 newBudget.setDayStartTime(todayEpochSecond);
                 newBudget.setBudgetAmount(requestData.getBudgetAmount());
                 budgetRepository.save(newBudget);
@@ -363,11 +360,12 @@ public class ExpenseService {
         return returnValue;
     }
 
-    public RequestResponse getExpenseDetails(Long userId, int page, int size, String fromDate, String toDate) {
+    public RequestResponse getExpenseDetails(Users user, int page, int size, String fromDate, String toDate) {
         RequestResponse response = new RequestResponse();
         try {
             Long fromEpoch = null;
             Long toEpoch = null;
+            Long userId = user.getId();
 
             if (fromDate != null && toDate != null) {
                 LocalDate from = LocalDate.parse(fromDate);
@@ -381,9 +379,9 @@ public class ExpenseService {
 
             if (fromEpoch != null && toEpoch != null) {
                 expensePage = expenseDetailsRepository
-                        .findByUserIdAndExpenseCreatedTimeEpochBetween(userId, fromEpoch, toEpoch, pageable);
+                        .findByUser_IdAndExpenseCreatedTimeEpochBetween(userId, fromEpoch, toEpoch, pageable);
             } else {
-                expensePage = expenseDetailsRepository.findByUserId(userId, pageable);
+                expensePage = expenseDetailsRepository.findByUser_Id(userId, pageable);
             }
 
             Double totalSpent = 0.0;
@@ -407,7 +405,7 @@ public class ExpenseService {
                 expenseData.setSpentDetails(expenseDetails.getSpentDetails());
                 expenseData.setExpenseCreatedTime(expenseDetails.getExpenseCreatedTimeEpoch());
                 expenseData.setDate(expenseDetails.getDayStartTime());
-                expenseData.setUserId(expenseDetails.getUserId());
+                expenseData.setUserId(expenseDetails.getUser().getId());
                 expenseDataList.add(expenseData);
             }
 
@@ -430,6 +428,17 @@ public class ExpenseService {
             logger.error("Error while getting expense details: {} {}", e.getMessage(), e);
         }
         return response;
+    }
+
+    public List<ExpenseDetails> getExpensesByDateRange(Long userId, LocalDate fromDate, LocalDate toDate) {
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("From date and to date must not be null");
+        }
+
+        Long fromEpoch = fromDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+        Long toEpoch = toDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond(); // inclusive
+
+        return expenseDetailsRepository.findExpensesByUserIdAndDateRange(userId, fromEpoch, toEpoch);
     }
 
 }

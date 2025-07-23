@@ -48,9 +48,12 @@ public class ExpenseController {
     // }
 
     @PostMapping("/update/budget")
-    public ResponseEntity<RequestResponse> updateBudgetDetails(@RequestBody BudgetAndExpenseDataModel requestData) {
-        logger.info("Updating budget details for userId: " + requestData.getUserId());
-        RequestResponse response = expenseService.updateBudget(requestData);
+    public ResponseEntity<RequestResponse> updateBudgetDetails(Principal principal,
+            @RequestBody BudgetAndExpenseDataModel requestData) {
+        String email = principal.getName();
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        RequestResponse response = expenseService.updateBudget(user, requestData);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -61,9 +64,7 @@ public class ExpenseController {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Long userId = user.getId();
-
-        RequestResponse response = expenseService.addExpenseDetails(userId, expenseDetails);
+        RequestResponse response = expenseService.addExpenseDetails(user, expenseDetails);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

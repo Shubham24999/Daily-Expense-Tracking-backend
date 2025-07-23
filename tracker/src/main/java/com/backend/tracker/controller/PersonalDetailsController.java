@@ -2,11 +2,13 @@ package com.backend.tracker.controller;
 
 import java.io.ByteArrayInputStream;
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +22,6 @@ import com.backend.tracker.helper.PdfExportUtil;
 import com.backend.tracker.service.ExpenseService;
 
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
 
 import com.backend.tracker.entity.Users;
 import com.backend.tracker.helper.RequestResponse;
@@ -82,20 +83,24 @@ public class PersonalDetailsController {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Long userId = user.getId();
-
-        RequestResponse response = expenseService.getExpenseDetails(userId, page, size, fromDate, toDate);
+        RequestResponse response = expenseService.getExpenseDetails(user, page, size, fromDate, toDate);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/download/excel")
-    public ResponseEntity<byte[]> exportExcel(Principal principal) throws IOException {
+    @GetMapping("/excel")
+    public ResponseEntity<byte[]> exportExcel(
+            Principal principal,
+            @RequestParam("fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam("toDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate)
+            throws IOException {
+
+        // Fetch user from token (Principal)
         String email = principal.getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Long userId = user.getId();
-        List<ExpenseDetails> expenses = expenseService.getAllExpenses(userId);
+        List<ExpenseDetails> expenses = expenseService.getExpensesByDateRange(user.getId(), fromDate, toDate);
+
         ByteArrayInputStream in = ExcelExportUtils.dataToExcel(expenses);
 
         HttpHeaders headers = new HttpHeaders();
@@ -107,13 +112,18 @@ public class PersonalDetailsController {
                 .body(in.readAllBytes());
     }
 
-    @GetMapping("/download/pdf")
-    public ResponseEntity<byte[]> exportPdf(Principal principal) {
+    @GetMapping("/pdf")
+    public ResponseEntity<byte[]> exportPdf(
+            Principal principal,
+            @RequestParam("fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam("toDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+
         String email = principal.getName();
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<ExpenseDetails> expenses = expenseService.getAllExpenses(user.getId());
+        List<ExpenseDetails> expenses = expenseService.getExpensesByDateRange(user.getId(), fromDate, toDate);
+
         ByteArrayInputStream pdfStream = PdfExportUtil.generatePdf(expenses);
 
         HttpHeaders headers = new HttpHeaders();
