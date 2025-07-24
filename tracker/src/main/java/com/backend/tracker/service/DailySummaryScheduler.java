@@ -38,7 +38,7 @@ public class DailySummaryScheduler {
         Long todayEpochDay = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
         for (Users user : users) {
-            Map<String, Object> summary = expenseService.getDailySummary(user.getId(), todayEpochDay);
+            Map<String, Object> summary = expenseService.getDailySummary(user, todayEpochDay);
 
             double totalSpent = (double) summary.getOrDefault("totalSpent", 0.0);
             double budget = (double) summary.getOrDefault("budget", 0.0);

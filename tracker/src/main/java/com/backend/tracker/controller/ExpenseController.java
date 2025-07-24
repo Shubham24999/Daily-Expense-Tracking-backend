@@ -35,8 +35,8 @@ public class ExpenseController {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Long userId = user.getId();
-        Map<String, Object> response = expenseService.getUserExpenseSummary(userId);
+        
+        Map<String, Object> response = expenseService.getUserExpenseSummary(user);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -74,8 +74,7 @@ public class ExpenseController {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Long userId = user.getId();
-        RequestResponse response = expenseService.getExpenseDetails(userId);
+        RequestResponse response = expenseService.getExpenseDetails(user);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

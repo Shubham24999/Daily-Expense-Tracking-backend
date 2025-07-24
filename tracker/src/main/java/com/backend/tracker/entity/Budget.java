@@ -30,7 +30,6 @@ public class Budget {
 
     @ManyToOne
     // @JoinColumn(name = "user_id", nullable = false)
-    @JoinColumn(name = "user_id")
     private Users user;
 
     @Column(name = "day_start_time")

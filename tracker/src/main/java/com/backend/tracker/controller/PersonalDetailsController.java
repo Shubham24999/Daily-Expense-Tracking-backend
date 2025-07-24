@@ -99,7 +99,7 @@ public class PersonalDetailsController {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<ExpenseDetails> expenses = expenseService.getExpensesByDateRange(user.getId(), fromDate, toDate);
+        List<ExpenseDetails> expenses = expenseService.getExpensesByDateRange(user, fromDate, toDate);
 
         ByteArrayInputStream in = ExcelExportUtils.dataToExcel(expenses);
 
@@ -122,7 +122,7 @@ public class PersonalDetailsController {
         Users user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<ExpenseDetails> expenses = expenseService.getExpensesByDateRange(user.getId(), fromDate, toDate);
+        List<ExpenseDetails> expenses = expenseService.getExpensesByDateRange(user, fromDate, toDate);
 
         ByteArrayInputStream pdfStream = PdfExportUtil.generatePdf(expenses);
 

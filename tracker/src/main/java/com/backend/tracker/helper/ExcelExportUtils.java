@@ -33,14 +33,15 @@ public class ExcelExportUtils {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
             int rowIdx = 1;
+            int srNo = 1;
             for (ExpenseDetails expense : expenseList) {
                 Row row = sheet.createRow(rowIdx++);
 
-                row.createCell(0).setCellValue(expense.getId());
+                row.createCell(0).setCellValue(srNo++);
                 row.createCell(1).setCellValue(expense.getSpentAmount());
                 row.createCell(2).setCellValue(expense.getSpentDetails());
                 row.createCell(3).setCellValue(
-                        dateFormat.format(new Date(expense.getExpenseCreatedTimeEpoch())));
+                        dateFormat.format(new Date(expense.getExpenseCreatedTimeEpoch() * 1000)));
             }
 
             workbook.write(out);
