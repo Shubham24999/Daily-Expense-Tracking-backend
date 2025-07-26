@@ -27,7 +27,7 @@ public class DailySummaryScheduler {
 
     @Scheduled(cron = "0 0 22 * * *") // Every day at 10 PM
     public void sendDailySummaries() {
-        logger.info("--- Starting Daily Expense Summary at 10 PM ---");
+        logger.debug("--- Starting Daily Expense Summary at 10 PM ---");
 
         List<Users> users = userRepo.findAll();
         if (users.isEmpty()) {
@@ -49,14 +49,14 @@ public class DailySummaryScheduler {
                     ? "❗ Alert: You have exceeded your budget!"
                     : "✅ You are within your budget.";
 
-            logger.info("User: {}", user.getName());
-            logger.info("Total Spent: ₹{}", totalSpent);
-            logger.info("Budget: ₹{}", budget);
-            logger.info("Remaining: ₹{}", remaining);
-            logger.info(status);
-            logger.info("---------------------------------------------");
+            logger.debug("User: {}", user.getName());
+            logger.debug("Total Spent: ₹{}", totalSpent);
+            logger.debug("Budget: ₹{}", budget);
+            logger.debug("Remaining: ₹{}", remaining);
+            logger.debug(status);
+            logger.debug("---------------------------------------------");
         }
 
-        logger.info("--- End of Daily Expense Summary ---");
+        logger.debug("--- End of Daily Expense Summary ---");
     }
 }

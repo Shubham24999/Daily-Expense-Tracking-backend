@@ -73,10 +73,10 @@ public class UserService {
                 response.setStatus("Ok");
                 response.setMessage("User registered successfully!");
                 response.setData(signUpResponse);
-                logger.info("User registered successfully: {}", savedUser.getEmail());
+                logger.debug("User registered successfully: {}", savedUser.getEmail());
 
             } else {
-                logger.info("Invalid email format: {}", model.getEmail());
+                logger.debug("Invalid email format: {}", model.getEmail());
                 response.setStatus("OK");
                 response.setMessage("Please Provide Email and Reuired Data in Correct Format!");
 

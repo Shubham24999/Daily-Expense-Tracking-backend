@@ -29,7 +29,7 @@ public class AuthController {
     public ResponseEntity<RequestResponse> registerUser(@RequestBody UserSignUpModel model) {
 
         RequestResponse response = userService.registerUser(model);
-        logger.info("User registration status is : {}", response.getStatus());
+        logger.debug("User registration status is : {}", response.getStatus());
 
         if (response.getStatus().equalsIgnoreCase("OK")) {
             return ResponseEntity.ok(response);

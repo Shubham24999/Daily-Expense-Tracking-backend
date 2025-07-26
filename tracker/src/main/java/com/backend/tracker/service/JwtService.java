@@ -25,24 +25,26 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
+    private final Logger logger = LogManager.getLogger(JwtService.class);
+
     // 1. Method is jus use secret Key application.properties file that would be
     // saved into .gitIgnore later.
-    @Value("${jwt.secret}")
-    private String secretKey;
+    // @Value("${jwt.secret}")
+    // private String secretKey;
 
     // 2. Method is to use secret key.
-    // private String secretKey = "";
+    private String secretKey = "";
 
-    // public JwtService() {
-    // try {
-    // KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
-    // SecretKey sK = keyGen.generateKey();
-    // secretKey = Base64.getEncoder().encodeToString(sK.getEncoded());
-    // } catch (NoSuchAlgorithmException e) {
-    // logger.error("Error generating key: " + e.getMessage());
-    // throw new RuntimeException("Error generating key", e);
-    // }
-    // }
+    public JwtService() {
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+            SecretKey sK = keyGen.generateKey();
+            secretKey = Base64.getEncoder().encodeToString(sK.getEncoded());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Error generating key: " + e.getMessage());
+            throw new RuntimeException("Error generating key", e);
+        }
+    }
 
     public String generateToken(String username) {
 

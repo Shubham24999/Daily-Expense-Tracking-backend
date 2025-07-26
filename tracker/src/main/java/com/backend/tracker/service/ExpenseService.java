@@ -58,7 +58,7 @@ public class ExpenseService {
                 budgetAmount = userOldBudget.get().getBudgetAmount();
             } else {
                 budgetAmount = 1000.0; // or any other default value you prefer
-                logger.info("No budget found for userId: {}. Using default budget amount: {}", user.getId(),
+                logger.debug("No budget found for userId: {}. Using default budget amount: {}", user.getId(),
                         budgetAmount);
             }
         }
@@ -66,7 +66,7 @@ public class ExpenseService {
         List<ExpenseDetails> expenseDetailsList = expenseDetailsRepository.findByUserAndDayStartTime(user,
                 todayEpochDay);
         if (expenseDetailsList.isEmpty()) {
-            logger.info("No expense details found for userId: {} on day: {}", user.getId(), todayEpochDay);
+            logger.debug("No expense details found for userId: {} on day: {}", user.getId(), todayEpochDay);
             return Map.of(
                     "userId", user.getId(),
                     "dayStartTime", todayEpochDay,
@@ -348,7 +348,7 @@ public class ExpenseService {
                 returnValue.setMessage("No Expenses find for: {}" + expenseId);
                 returnValue.setStatus("NOT_FOUND");
             }
-            logger.info("Expense deleted successfully: {}", expenseId);
+            logger.debug("Expense deleted successfully: {}", expenseId);
 
         } catch (Exception e) {
             returnValue.setStatus("error");
